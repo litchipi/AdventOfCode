@@ -8,10 +8,15 @@ As I want to learn the Rust langage, I decided to use these puzzles to learn it
 
 ### Done so far:
 - [Day 12](https://adventofcode.com/2020/day/12) (both gold stars obtained)
+- [Day 11](https://adventofcode.com/2020/day/11) (both gold stars obtained)
 
 ### What I learnt in Rust:
-- Argument parsing: [Day 12](https://adventofcode.com/2020/day/12)
-- Read from file: [Day 12](https://adventofcode.com/2020/day/12)
-- Struct data & implementation: [Day 12](https://adventofcode.com/2020/day/12)
-- enums and match statement: [Day 12](https://adventofcode.com/2020/day/12)
-- Rust internal data management: [Day 12](https://adventofcode.com/2020/day/12)
+- Argument parsing: [Day 12](https://adventofcode.com/2020/day/12), [Day 11](https://adventofcode.com/2020/day/11)
+- Read from file: [Day 12](https://adventofcode.com/2020/day/12), [Day 11](https://adventofcode.com/2020/day/11)
+- Struct data & implementation: [Day 12](https://adventofcode.com/2020/day/12), [Day 11](https://adventofcode.com/2020/day/11)
+- enums and match statement: [Day 12](https://adventofcode.com/2020/day/12), [Day 11](https://adventofcode.com/2020/day/11)
+- Rust internal data management: [Day 12](https://adventofcode.com/2020/day/12), [Day 11](https://adventofcode.com/2020/day/11)
+- Vectors, double vectors: [Day 11](https://adventofcode.com/2020/day/11)
+- Ownership & borrowing: [Day 11](https://adventofcode.com/2020/day/11)
+- Exceptions handling basis: [Day 11](https://adventofcode.com/2020/day/11)
+- Clone & Copy derive statement: [Day 11](https://adventofcode.com/2020/day/11)
