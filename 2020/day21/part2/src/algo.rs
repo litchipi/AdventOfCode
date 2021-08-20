@@ -26,10 +26,13 @@ pub fn solve(input: ParsedInput){
                     input.all_ingr[ingr].clone()
                 ));
 
-                println!("Pair found: {:?}", pairs.last());
                 safe_matrix[allergen_ind] = vec![false; input.all_ingr.len()];
                 continue;
             }
         }
     }
+
+    pairs.sort_by(|a, b| a.0.cmp(&b.0));
+
+    println!("{}", pairs.iter().map(|el| el.1.clone()).collect::<Vec<String>>().join(","));
 }
