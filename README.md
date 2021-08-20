@@ -19,4 +19,4 @@ Seeking deeper, trying more robust and/or elegant and/or maintainable and/or
 \<insert adjective\> way to do it.
 
 ### Done:
-- [Day 21](https://adventofcode.com/2020/day/21) (only one star obtained)
+- [Day 21](https://adventofcode.com/2020/day/21) (both gold stars obtained)
