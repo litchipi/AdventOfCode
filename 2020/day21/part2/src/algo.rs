@@ -34,5 +34,5 @@ pub fn solve(input: ParsedInput){
 
     pairs.sort_by(|a, b| a.0.cmp(&b.0));
 
-    println!("{}", pairs.iter().map(|el| el.1.clone()).collect::<Vec<String>>().join(","));
+    println!("{}", pairs.iter().map(|el| el.1.clone()).collect::<Vec<Ingredient>>().join(","));
 }
