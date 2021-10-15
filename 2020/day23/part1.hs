@@ -1,5 +1,7 @@
 module Main where
 
+import qualified Data.Maybe as Maybe
+import qualified Data.List as List
 import qualified Debug.Trace as Debug
 import qualified System.Environment as Environment
 
@@ -21,15 +23,33 @@ cup_to_char intinp = (show intinp) !! 0
 
 
 
+showcircle :: CupCircle -> Cup -> String -> String
+-- showcircle circle curr res | Debug.trace ("Showcircle: " ++ (show circle) ++ ", current cup: " ++ (show curr) ++ ", res: " ++ (show res)) False = undefined
+showcircle [] curr res = res
+showcircle circle curr res = showcircle (drop 1 circle) (curr-1) (res ++ " " ++ new_el ++ " ")
+	where
+		cupchar = cup_to_char (circle !! 0)
+		new_el = if curr == 0
+			  then "(" ++ [cupchar] ++ ")"
+			  else " " ++ [cupchar] ++ " "
 
 get_init_state :: String -> GameState
 get_init_state input = GameState { current_cup_index = 0, circle = circle }
 	where
-		circle = Debug.trace "Get circle from input" (map cup_from_char input)
+		circle = map cup_from_char input
+
+loop_through_circle :: CupCircle -> Int -> Cup -> CupCircle -> CupCircle
+loop_through_circle circle index stopat res
+ | index == (length circle) = loop_through_circle circle 0 stopat res
+ | (circle !! index) == stopat = res
+ | otherwise = res ++ [circle !! index] ++ (loop_through_circle circle (index+1) stopat res)
 
 get_result_from_state :: GameState -> String
 get_result_from_state state | Debug.trace ("Final state: " ++ (show state)) False = undefined
-get_result_from_state state = map cup_to_char (circle state)
+get_result_from_state state = map cup_to_char result
+	where
+		index_of_1 = find_index 1 (circle state)
+		result = loop_through_circle (circle state) (index_of_1 + 1) 1 []
 
 
 
@@ -49,18 +69,20 @@ pop_circle list ind len = (take ind list) ++ (drop (ind + len) list)
 
 choose_destination :: Cup -> [Cup] -> (Int, Int) -> Cup
 choose_destination dest picked range
-  | dest < (fst range) = choose_destination ((snd range) - 1) picked range
+  | dest < (fst range) = choose_destination (snd range) picked range
   | elem dest picked = choose_destination (dest - 1) picked range
   | otherwise = dest
 
 find_index :: Cup -> [Cup] -> Int
-find_index val list = undefined
+--find_index val list | Debug.trace ("Finding val " ++ (show val) ++ " from list " ++ (show list)) False = undefined
+find_index val list = Maybe.fromMaybe undefined (List.elemIndex val list)
 
 insert_circle :: Int -> [Cup] -> CupCircle -> CupCircle
-insert_circle ind cups circle = undefined
+--insert_circle ind cups circle | Debug.trace ("Inserting " ++ (show cups) ++ " in circle " ++ (show circle) ++ " at index " ++ (show ind)) False = undefined
+insert_circle ind cups circle = (take (ind+1) circle) ++ cups ++ (drop (ind+1) circle)
 
 compute_game :: Int -> GameState -> GameState
-compute_game nrounds state | Debug.trace ("Round " ++ (show nrounds) ++ " of game, state: " ++ (show state)) False = undefined
+--compute_game nrounds state | Debug.trace ("Round " ++ (show (11 - nrounds)) ++ " of game, circle: " ++ (showcircle (circle state) (current_cup_index state) "")) False = undefined
 compute_game nrounds state = final_state
 	where
 		cups_picked = pick_cups (circle state) ((current_cup_index state) + 1) 3
@@ -74,10 +96,12 @@ compute_game nrounds state = final_state
 		new_circle = insert_circle destination_index cups_picked circle_popped
 
 		new_currentcup_index = find_index current_cup new_circle
-		next_currentcup_index = new_currentcup_index + 1
+		next_currentcup_index = if (new_currentcup_index + 1) >= (length (circle state))
+							 then (new_currentcup_index + 1) - (length (circle state))
+							 else new_currentcup_index + 1
 
 		new_state = GameState { current_cup_index = next_currentcup_index, circle = new_circle }
-		final_state = if nrounds == 0
+		final_state = if (nrounds - 1) == 0
 				   then new_state
 				   else compute_game (nrounds - 1) new_state
 
@@ -94,7 +118,7 @@ play_test_game rounds = putStrLn ("Expected " ++ exp ++ " got " ++ got ++ " -> "
 		  10 -> test_result10
 		  100 -> test_result100
 
-		got = get_result_from_state (compute_game rounds (Debug.traceShowId (get_init_state test_input)))
+		got = get_result_from_state (compute_game rounds (get_init_state test_input))
 		result = if got == exp then "Success" else "Failure"
 
 
