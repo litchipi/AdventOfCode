@@ -19,3 +19,9 @@ Seeking deeper, trying more robust and/or elegant and/or maintainable and/or
 
 #### Done:
 - [Day 21](https://adventofcode.com/2020/day/21) (both gold stars obtained)
+
+## October 2021 session
+To learn Haskell
+
+#### Done:
+- [Day 23](https://adventofcode.com/2020/day/21) (one start obtained)
