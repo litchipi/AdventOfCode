@@ -1,28 +1,71 @@
 module Main where
 
+import qualified Debug.Trace as Debug
 import qualified System.Environment as Environment
+
+type Cup = Int;
+type CupCircle = [Cup];
+data GameState = 
+	GameState { current_cup_index :: Int, circle :: CupCircle }
+  deriving (Eq, Show)
+
+
+
+cup_from_char :: Char -> Cup
+cup_from_char charinp = read [charinp] :: Cup
+
+cup_to_char :: Cup -> Char
+cup_to_char intinp | intinp > 9 = undefined
+cup_to_char intinp = (show intinp) !! 0
+
+
+
+
+
+get_init_state :: String -> GameState
+get_init_state input = GameState { current_cup_index = 0, circle = circle }
+	where
+		circle = Debug.trace "Get circle from input" (map cup_from_char input)
+
+get_result_from_state :: GameState -> String
+get_result_from_state state | Debug.trace ("Final state: " ++ (show state)) False = undefined
+get_result_from_state state = map cup_to_char (circle state)
+
+
+
+
+
+pick_cups :: CupCircle -> Int -> Int -> [Cup]
+pick_cups list ind len 
+  | (ind + len) > (length list) = (pick_cups list ind ((length list) - ind)) ++ take ((ind + len) - (length list)) list
+pick_cups list ind len = take len . drop ind $ list
+
+pop_circle :: CupCircle -> Int -> Int -> CupCircle
+pop_circle list ind len 
+  | (ind + len) > (length list) = drop ((ind + len) - (length list)) (pop_circle list ind ((length list) - ind))
+pop_circle list ind len = (take ind list) ++ (drop (ind + len) list)
+
+compute_game :: Int -> GameState -> GameState
+compute_game nrounds state | Debug.trace ("Round " ++ (show nrounds) ++ " of game, state: " ++ (show state)) False = undefined
+compute_game nrounds state = final_state
+	where
+		cups_picked = pick_cups (circle state) ((current_cup_index state) + 1) 3
+		circle_popped = pop_circle (circle state) ((current_cup_index state) + 1) 3
+
+		-- TODO		Perform modifications on state here
+		new_circle = Debug.trace ("Circle popped: " ++ (show circle_popped)) circle_popped
+			`seq` Debug.trace ("Cups picked: " ++ (show cups_picked)) cups_picked
+			`seq` (circle state) 
+		new_state = GameState { current_cup_index = (current_cup_index state) + 1, circle = new_circle }
+		final_state = if nrounds == 0
+				   then new_state
+				   else compute_game (nrounds - 1) new_state
+
+
 
 test_input = "389125467"
 test_result10 = "92658374"
 test_result100 = "67384529"
-
-data GameState = 
-	GameState { current_cup :: Int }
-
-get_init_state :: String -> GameState
--- TODO		Get initial state from input String
-get_init_state input = GameState { current_cup = 0 }
-
-get_result_from_state :: GameState -> String
--- TODO		Get result output from final state
-get_result_from_state state = "1234567890"
-
-compute_game :: Int -> GameState -> GameState
-compute_game nrounds state = final_state
-	where
-		-- TODO		Perform modifications on state here
-		new_state = GameState { current_cup = (current_cup state) + 1 }
-		final_state = compute_game (nrounds - 1) new_state
 
 play_test_game :: Int -> IO ()
 play_test_game rounds = putStrLn ("Expected " ++ exp ++ " got " ++ got ++ " -> " ++ result)
@@ -31,8 +74,10 @@ play_test_game rounds = putStrLn ("Expected " ++ exp ++ " got " ++ got ++ " -> "
 		  10 -> test_result10
 		  100 -> test_result100
 
-		got = get_result_from_state (compute_game rounds (get_init_state test_input))
+		got = get_result_from_state (compute_game rounds (Debug.traceShowId (get_init_state test_input)))
 		result = if got == exp then "Success" else "Failure"
+
+
 
 main :: IO ()
 main = do {
