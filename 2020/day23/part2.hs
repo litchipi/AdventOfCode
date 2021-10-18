@@ -12,6 +12,13 @@ data GameState =
   deriving (Eq, Show)
 
 
+circle_total_size = 1000000
+nb_rounds = 10000000
+test_input = "389125467"
+test_result = 149245887792
+
+
+
 
 cup_from_char :: Char -> Cup
 cup_from_char charinp = read [charinp] :: Cup
@@ -33,16 +40,17 @@ showcircle circle curr res = showcircle (drop 1 circle) (curr-1) (res ++ " " ++ 
 			  then "(" ++ [cupchar] ++ ")"
 			  else " " ++ [cupchar] ++ " "
 
-extend_circle_to :: Int -> CupCircle -> CupCircle
-extend_circle_to totsize circle | totsize == (length circle) = circle
-extend_circle_to totsize circle = circle ++ [(maximum circle) + 1]
-
-circle_total_size = 1000000
+extend_circle_to :: Int -> CupCircle -> Int -> CupCircle
+extend_circle_to totsize circle maxi | Debug.trace ("Extend circle size " ++ (show maxi) ++ "/" ++ (show totsize)) False = undefined
+extend_circle_to totsize circle maxi | totsize == maxi = circle
+extend_circle_to totsize circle maxi = extend_circle_to totsize (circle ++ [maxi + 1]) (maxi+1)
 
 get_init_state :: String -> GameState
-get_init_state input = GameState { current_cup_index = 0, circle = (extend_circle_to circle_total_size circle) }
+get_init_state input | Debug.trace ("Getting initial state from input " ++ (show input)) False = undefined
+get_init_state input = GameState { current_cup_index = 0, circle = circle}
 	where
-		circle = map cup_from_char input
+		initcircle = map cup_from_char input
+		circle = extend_circle_to circle_total_size initcircle (maximum initcircle)
 
 loop_through_circle :: CupCircle -> Int -> Cup -> CupCircle -> CupCircle
 loop_through_circle circle index stopat res
@@ -61,8 +69,6 @@ get_result_from_state state = num1 * num2
 
 		ind2 = (index_of_1 + 2) `mod` (length (circle state))
 		num2 = (circle state) !! ind2
-
-
 
 
 
@@ -96,7 +102,7 @@ compute_game :: Int -> GameState -> GameState
 compute_game nrounds state | Debug.trace ("Round " ++ (show ((nb_rounds + 1) - nrounds))) False = undefined
 compute_game nrounds state = final_state
 	where
-		cups_picked = pick_cups (circle state) ((current_cup_index state) + 1) 3
+		cups_picked = Debug.trace ("Circle length: " ++ (show (length (circle state)))) (pick_cups (circle state) ((current_cup_index state) + 1) 3)
 		circle_popped = pop_circle (circle state) ((current_cup_index state) + 1) 3
 
 		current_cup = (circle state) !! (current_cup_index state)
@@ -118,17 +124,13 @@ compute_game nrounds state = final_state
 
 
 
-test_input = "389125467"
-test_result = 149245887792
-
 play_test_game :: Int -> IO ()
 play_test_game rounds = putStrLn ("Expected " ++ (show test_result) ++ " got " ++ (show got) ++ " -> " ++ result)
 	where
-		got = get_result_from_state (compute_game rounds (get_init_state test_input))
+		initstate = (get_init_state test_input)
+		got = get_result_from_state (compute_game rounds initstate) -- (get_init_state test_input))
 		result = if got == test_result then "Success" else "Failure"
 
-
-nb_rounds = 10000000
 
 main :: IO ()
 main = do {
