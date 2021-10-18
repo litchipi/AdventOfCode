@@ -42,6 +42,9 @@ stack_snapshot(
     # To switch to pinned stackage dependencies, run `bazel run @stackage-unpinned//:pin` and
     # uncomment the following line.
     # stack_snapshot_json = "//:stackage_snapshot.json",
+	packages = [
+			"pointedlist"
+			],
 )
 
 # Download a GHC binary distribution from haskell.org and register it as a toolchain.
