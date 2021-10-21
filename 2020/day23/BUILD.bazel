@@ -35,5 +35,5 @@ haskell_binary(
 haskell_binary(
     name = "part2",
     srcs = [":part2.hs"],
-    deps = [":base"],
+    deps = [":base", "@stackage//:deepseq"],
 )

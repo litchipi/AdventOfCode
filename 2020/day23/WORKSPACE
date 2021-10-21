@@ -38,6 +38,7 @@ stack_snapshot(
     # Last snapshot published for ghc-8.6.5 the default version picked up by
     # rules_haskell
     snapshot = "lts-14.27",
+	packages = ["deepseq"],
     # This uses an unpinned version of stack_snapshot, meaning that stack is invoked on every build.
     # To switch to pinned stackage dependencies, run `bazel run @stackage-unpinned//:pin` and
     # uncomment the following line.

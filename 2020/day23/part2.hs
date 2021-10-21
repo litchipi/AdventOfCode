@@ -1,5 +1,7 @@
+
 module Main where
 
+import qualified Control.DeepSeq as DS
 import qualified Data.Maybe as Maybe
 import qualified Data.List as List
 import qualified Debug.Trace as Debug
@@ -12,8 +14,11 @@ data GameState =
   deriving (Eq, Show)
 
 
-circle_total_size = 1000000
-nb_rounds = 10000000
+circle_total_size = 10^6
+nb_rounds = 10^7
+
+input = "135468729" -- Expected results: 186715244496
+
 test_input = "389125467"
 test_result = 149245887792
 
@@ -25,7 +30,7 @@ cup_from_char charinp = read [charinp] :: Cup
 
 cup_to_char :: Cup -> Char
 cup_to_char intinp | intinp > 9 = undefined
-cup_to_char intinp = (show intinp) !! 0
+cup_to_char intinp = head $ show intinp
 
 
 
@@ -35,34 +40,35 @@ showcircle :: CupCircle -> Cup -> String -> String
 showcircle [] curr res = res
 showcircle circle curr res = showcircle (drop 1 circle) (curr-1) (res ++ " " ++ new_el ++ " ")
 	where
-		cupchar = cup_to_char (circle !! 0)
+		cupchar = cup_to_char $ head circle
 		new_el = if curr == 0
 			  then "(" ++ [cupchar] ++ ")"
 			  else " " ++ [cupchar] ++ " "
 
 extend_circle_to :: Int -> CupCircle -> Int -> CupCircle
-extend_circle_to totsize circle maxi | Debug.trace ("Extend circle size " ++ (show maxi) ++ "/" ++ (show totsize)) False = undefined
-extend_circle_to totsize circle maxi | totsize == maxi = circle
+-- extend_circle_to totsize circle maxi | Debug.trace ("Extend circle size " ++ (show maxi) ++ "/" ++ (show totsize)) False = undefined
+extend_circle_to totsize circle maxi | maxi >= totsize = Debug.trace ("Final circle built, size = " ++ (show maxi)) circle
 extend_circle_to totsize circle maxi = extend_circle_to totsize (circle ++ [maxi + 1]) (maxi+1)
 
-get_init_state :: String -> GameState
-get_init_state input | Debug.trace ("Getting initial state from input " ++ (show input)) False = undefined
-get_init_state input = GameState { current_cup_index = 0, circle = circle}
+get_init_circle :: String -> CupCircle
+get_init_circle input | Debug.trace ("Getting init circle from input " ++ (show input)) False = undefined
+get_init_circle input = circle
 	where
 		initcircle = map cup_from_char input
-		circle = extend_circle_to circle_total_size initcircle (maximum initcircle)
+		circle = DS.force $ extend_circle_to circle_total_size initcircle (maximum initcircle)
 
 loop_through_circle :: CupCircle -> Int -> Cup -> CupCircle -> CupCircle
+loop_through_circle circle index stopat res | Debug.trace ("Looping through the " ++ (show $ length circle) ++ " circle at index " ++ (show index)) False = undefined
 loop_through_circle circle index stopat res
  | index == (length circle) = loop_through_circle circle 0 stopat res
  | (circle !! index) == stopat = res
  | otherwise = res ++ [circle !! index] ++ (loop_through_circle circle (index+1) stopat res)
 
 get_result_from_state :: GameState -> Int
---get_result_from_state state | Debug.trace ("Final state: " ++ (show state)) False = undefined
+get_result_from_state state | Debug.trace "Getting result from final state" False = undefined
 get_result_from_state state = num1 * num2
 	where
-		index_of_1 = find_index 1 (circle state)
+		index_of_1 = Debug.trace "Testing" $ Maybe.fromMaybe undefined $ List.elemIndex 1 (circle state)
 		
 		ind1 = (index_of_1 + 1) `mod` (length (circle state))
 		num1 = (circle state) !! ind1
@@ -99,35 +105,43 @@ insert_circle :: Int -> [Cup] -> CupCircle -> CupCircle
 insert_circle ind cups circle = (take (ind+1) circle) ++ cups ++ (drop (ind+1) circle)
 
 compute_game :: Int -> GameState -> GameState
-compute_game nrounds state | Debug.trace ("Round " ++ (show ((nb_rounds + 1) - nrounds))) False = undefined
+--compute_game nrounds state | Debug.trace ("Round " ++ (show ((nb_rounds + 1) - nrounds))) False = undefined
 compute_game nrounds state = final_state
 	where
-		cups_picked = Debug.trace ("Circle length: " ++ (show (length (circle state)))) (pick_cups (circle state) ((current_cup_index state) + 1) 3)
+		cups_picked = pick_cups (circle state) ((current_cup_index state) + 1) 3
 		circle_popped = pop_circle (circle state) ((current_cup_index state) + 1) 3
 
 		current_cup = (circle state) !! (current_cup_index state)
 		range = (minimum (circle state), maximum (circle state))
 		destination = choose_destination (current_cup - 1) cups_picked range
 
-		destination_index = find_index destination circle_popped
-		new_circle = insert_circle destination_index cups_picked circle_popped
+		destination_index = Maybe.fromMaybe undefined $ List.elemIndex destination circle_popped
+		new_circle = DS.force $ insert_circle destination_index cups_picked circle_popped
 
-		new_currentcup_index = find_index current_cup new_circle
-		next_currentcup_index = if (new_currentcup_index + 1) >= (length (circle state))
+		new_currentcup_index = Maybe.fromMaybe undefined $ List.elemIndex current_cup new_circle
+		next_currentcup_index = DS.force $ if (new_currentcup_index + 1) >= (length (circle state))
 							 then (new_currentcup_index + 1) - (length (circle state))
 							 else new_currentcup_index + 1
 
-		new_state = GameState { current_cup_index = next_currentcup_index, circle = new_circle }
+		new_state = GameState { current_cup_index = next_currentcup_index, circle = (DS.force new_circle) }
 		final_state = if (nrounds - 1) == 0
-				   then new_state
+				   then Debug.trace ("Finished all the rounds") new_state
 				   else compute_game (nrounds - 1) new_state
 
-
+play_real_game :: Int -> IO ()
+play_real_game rounds = putStrLn ("Result: " ++ (show results))
+	where
+		init_circle = DS.force $ get_init_circle input
+		init_state = GameState { current_cup_index = 0, circle = init_circle }
+		final_state = compute_game nb_rounds init_state
+		results = get_result_from_state final_state
 
 play_test_game :: Int -> IO ()
 play_test_game rounds = putStrLn ("Expected " ++ (show test_result) ++ " got " ++ (show got) ++ " -> " ++ result)
 	where
-		initstate = (get_init_state test_input)
+		init_circle = DS.force $ get_init_circle test_input
+		initstate = GameState { current_cup_index = 0, circle = init_circle }
+
 		got = get_result_from_state (compute_game rounds initstate) -- (get_init_state test_input))
 		result = if got == test_result then "Success" else "Failure"
 
@@ -140,7 +154,7 @@ main = do {
 		else
 			case (x !! 0) of
 				"test" -> play_test_game nb_rounds
-				"input" -> putStrLn ("Result: " ++ (show (get_result_from_state (compute_game nb_rounds (get_init_state (x !! 1))))))
+				"input" -> play_real_game nb_rounds
 
 				_ -> putStrLn help_msg
 	  }
@@ -148,3 +162,4 @@ main = do {
 help_msg = "Arguments expected: \n\
 				\    test: Perform a test \n\
 				\    input <input>: Perform the computation on the given input"
+
