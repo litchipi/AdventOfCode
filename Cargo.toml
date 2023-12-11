@@ -1,6 +1,6 @@
-[workspace]
-resolver = "2"
-members = [
-  "2023/day1/part1",
-  "2023/day1/part2",
-]
+[package]
+name = "part1"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
