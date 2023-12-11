@@ -4,10 +4,8 @@ const REAL_INPUT: &str = include_str!("./input");
 
 const SPELLED_NUMBERS: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
-pub fn solve() {
-    let res = solve_part2(REAL_INPUT);
-    println!("=== RESULT ===");
-    println!("{res:?}");
+pub fn solve() -> u32 {
+    return solve_part2(REAL_INPUT);
 }
 
 fn solve_part1(input: &'static str) -> u32 {
@@ -17,7 +15,7 @@ fn solve_part1(input: &'static str) -> u32 {
         let mut nums = line.chars().filter(|c| c.is_numeric()).map(|c| c.to_digit(10).unwrap());
         let f = nums.next().unwrap();
         let l = nums.last().unwrap_or(f);
-        println!("{f} {l}");
+        // println!("{f} {l}");
         res += (f * 10) + l;
     }
     res
@@ -79,7 +77,7 @@ fn solve_part2(input: &'static str) -> u32 {
             }
             result
         }.unwrap_or(f);
-        println!("{f} {l}");
+        // println!("{f} {l}");
         res += (f * 10) + l;
     }
     res
