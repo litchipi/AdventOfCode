@@ -2,3 +2,5 @@
 target
 bazel-*
 .*rc
+input
+test_input_part*
